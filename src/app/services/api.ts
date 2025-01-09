@@ -3,14 +3,19 @@ import { authService } from './authService';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
+interface CustomRequestInit extends RequestInit {
+  credentials: RequestCredentials;
+  headers?: Record<string, string>;
+}
+
 const getHeaders = () => ({
   'Content-Type': 'application/json',
   'Accept': 'application/json'
 });
 
-async function fetchWithRetry(
+export async function fetchWithRetry(
   url: string,
-  options: RequestInit,
+  options: Partial<CustomRequestInit>,
   maxAttempts = 3
 ): Promise<Response> {
   let lastError: Error;
@@ -18,39 +23,28 @@ async function fetchWithRetry(
   
   while (currentAttempt < maxAttempts) {
     try {
-      const response = await fetch(url, {
+      const finalOptions: CustomRequestInit = {
         ...options,
         credentials: 'include',
         headers: {
           ...getHeaders(),
-          ...options.headers
-        }
-      });
-
-      const finalOptions = {
-        ...options,
-        credentials: 'include',
-        headers: {
-          ...getHeaders(),
-          ...options.headers
+          ...(options.headers || {})
         }
       };
     
-      console.log('Fetching:', url, finalOptions); // Debug için
+      console.log('Fetching:', url, finalOptions);
 
-      // 401 hatası alırsak
+      const response = await fetch(url, finalOptions);
+
       if (response.status === 401) {
         try {
           const verifyResult = await authService.verifyToken();
           if (verifyResult.valid) {
-            // Token hala geçerliyse tekrar dene
             currentAttempt++;
             continue;
           }
-          // Token geçersizse ve son deneme değilse yeni token al
           if (currentAttempt < maxAttempts - 1) {
             currentAttempt++;
-            // 1 saniye bekle
             await new Promise(resolve => setTimeout(resolve, 1000));
             continue;
           }
@@ -59,9 +53,9 @@ async function fetchWithRetry(
         }
       }
 
-      // Diğer tüm hata kodları için
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.error('Response error:', errorData);
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
 

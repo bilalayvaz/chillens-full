@@ -1,4 +1,6 @@
 // services/authService.ts
+import { fetchWithRetry } from './api';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 interface AuthResponse {
@@ -22,12 +24,8 @@ interface VerifyResponse {
 export const authService = {
   verifyToken: async (): Promise<VerifyResponse> => {
     try {
-      const response = await fetch(`${API_URL}/api/auth/verify`, {
-        credentials: 'include',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
+      const response = await fetchWithRetry(`${API_URL}/api/auth/verify`, {
+        method: 'GET'
       });
 
       if (response.ok) {
@@ -43,30 +41,31 @@ export const authService = {
   },
 
   signin: async (profileId: string, handle: string): Promise<AuthResponse> => {
-    const response = await fetch(`${API_URL}/api/auth/signin`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        lensProfileId: profileId,
-        handle: handle
-      })
-    });
+    try {
+      console.log('Attempting signin with:', { profileId, handle });
 
-    if (!response.ok) {
+      const response = await fetchWithRetry(`${API_URL}/api/auth/signin`, {
+        method: 'POST',
+        body: JSON.stringify({
+          lensProfileId: profileId,
+          handle: handle
+        })
+      });
+
+      const data = await response.json();
+      console.log('Signin response:', data);
+
+      return data;
+    } catch (error) {
+      console.error('Signin error:', error);
       throw new Error('Authentication failed');
     }
-
-    return response.json();
   },
 
   logout: async (): Promise<void> => {
     try {
-      await fetch(`${API_URL}/api/auth/logout`, {
-        method: 'POST',
-        credentials: 'include'
+      await fetchWithRetry(`${API_URL}/api/auth/logout`, {
+        method: 'POST'
       });
     } catch (error) {
       console.error('Logout error:', error);
