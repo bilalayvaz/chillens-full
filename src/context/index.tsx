@@ -39,6 +39,7 @@ const modal = createAppKit({
   },
   themeMode:'light',
 })
+console.debug('Modal state:', modal);
 
 const lensConfig = {
   environment: production,
