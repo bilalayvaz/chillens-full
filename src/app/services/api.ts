@@ -4,7 +4,8 @@ import { authService } from './authService';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 const getHeaders = () => ({
-  'Content-Type': 'application/json'
+  'Content-Type': 'application/json',
+  'Accept': 'application/json'
 });
 
 async function fetchWithRetry(
@@ -25,6 +26,17 @@ async function fetchWithRetry(
           ...options.headers
         }
       });
+
+      const finalOptions = {
+        ...options,
+        credentials: 'include',
+        headers: {
+          ...getHeaders(),
+          ...options.headers
+        }
+      };
+    
+      console.log('Fetching:', url, finalOptions); // Debug için
 
       // 401 hatası alırsak
       if (response.status === 401) {
