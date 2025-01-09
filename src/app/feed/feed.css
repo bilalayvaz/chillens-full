@@ -1,0 +1,21 @@
+.custom-scrollbar {
+  scrollbar-width: thin; /* Firefox için ince scrollbar */
+  scrollbar-color: #e8c0c0 #ffffff; /* Firefox için scrollbar renkleri */
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px; /* Scroll bar genişliği küçültüldü */
+  height: 6px; /* Yatay scroll bar yüksekliği küçültüldü */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #ffffff; /* Scroll bar arka planı */
+  margin-top: 10px; /* Scroll barı kartlardan uzaklaştırır */
+  margin-bottom: 10px; /* Scroll barı kartlardan uzaklaştırır */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #e8c0c0; /* Scroll bar rengi */
+  border-radius: 20px; /* Scroll bar köşe yuvarlama */
+  border: 2px solid #ffffff; /* Scroll bar kenar boşluğu küçültüldü */
+}
