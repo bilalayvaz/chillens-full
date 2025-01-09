@@ -1,21 +1,12 @@
 // services/api.ts
 import { authService } from './authService';
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-
-interface CustomRequestInit extends RequestInit {
-  credentials: RequestCredentials;
-  headers?: Record<string, string>;
-}
-
 const getHeaders = () => ({
-  'Content-Type': 'application/json',
-  'Accept': 'application/json'
+  'Content-Type': 'application/json'
 });
-
-export async function fetchWithRetry(
+async function fetchWithRetry(
   url: string,
-  options: Partial<CustomRequestInit>,
+  options: RequestInit,
   maxAttempts = 3
 ): Promise<Response> {
   let lastError: Error;
@@ -23,28 +14,27 @@ export async function fetchWithRetry(
   
   while (currentAttempt < maxAttempts) {
     try {
-      const finalOptions: CustomRequestInit = {
+      const response = await fetch(url, {
         ...options,
         credentials: 'include',
         headers: {
           ...getHeaders(),
-          ...(options.headers || {})
+          ...options.headers
         }
-      };
-    
-      console.log('Fetching:', url, finalOptions);
-
-      const response = await fetch(url, finalOptions);
-
+      });
+      // 401 hatası alırsak
       if (response.status === 401) {
         try {
           const verifyResult = await authService.verifyToken();
           if (verifyResult.valid) {
+            // Token hala geçerliyse tekrar dene
             currentAttempt++;
             continue;
           }
+          // Token geçersizse ve son deneme değilse yeni token al
           if (currentAttempt < maxAttempts - 1) {
             currentAttempt++;
+            // 1 saniye bekle
             await new Promise(resolve => setTimeout(resolve, 1000));
             continue;
           }
@@ -52,13 +42,11 @@ export async function fetchWithRetry(
           console.error('Token verify error:', verifyError);
         }
       }
-
+      // Diğer tüm hata kodları için
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('Response error:', errorData);
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
-
       return response;
     } catch (error) {
       console.error(`Attempt ${currentAttempt + 1} failed:`, error);
@@ -72,10 +60,8 @@ export async function fetchWithRetry(
       currentAttempt++;
     }
   }
-
   throw lastError!;
 }
-
 // Post Service
 export const postService = {
   create: async (postData: CreatePostDTO) => {
@@ -83,38 +69,32 @@ export const postService = {
       method: 'POST',
       body: JSON.stringify(postData)
     });
-
     if (!response.ok) {
       throw new Error('Failed to create post');
     }
     return response.json();
   },
-
   getByProfile: async (profileId: string) => {
     const response = await fetchWithRetry(
       `${API_URL}/api/posts/profile/${profileId}`,
       { method: 'GET' }
     );
-
     if (!response.ok) {
       throw new Error('Failed to fetch profile posts');
     }
     return response.json();
   },
-
   getLatest: async () => {
     const response = await fetchWithRetry(
       `${API_URL}/api/posts`,
       { method: 'GET' }
     );
-
     if (!response.ok) {
       throw new Error('Failed to fetch posts');
     }
     return response.json();
   }
 };
-
 // AI Post Service
 export const aipostService = {
   getRandomPost: async () => {
@@ -122,15 +102,12 @@ export const aipostService = {
       `${API_URL}/api/aiposts/random`,
       { method: 'GET' }
     );
-
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || 'Failed to fetch random post');
     }
-
     return response.json();
   },
-
   updateStatus: async (postId: string) => {
     const response = await fetchWithRetry(
       `${API_URL}/api/aiposts/${postId}`,
@@ -139,13 +116,11 @@ export const aipostService = {
         body: JSON.stringify({ status: true })
       }
     );
-
     if (!response.ok) {
       throw new Error('Failed to update post status');
     }
   }
 };
-
 // User Service
 export const userService = {
   getOrCreate: async (lensProfileId: string, handle: string) => {
@@ -156,15 +131,12 @@ export const userService = {
         body: JSON.stringify({ lensProfileId, handle })
       }
     );
-
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Failed to get or create user');
     }
-
     return response.json();
   },
-
   useCredit: async (lensProfileId: string) => {
     const response = await fetchWithRetry(
       `${API_URL}/api/users/use-credit`,
@@ -176,30 +148,24 @@ export const userService = {
         })
       }
     );
-
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Failed to use credit');
     }
-
     return response.json();
   },
-
   getPostingStatus: async (lensProfileId: string) => {
     const response = await fetchWithRetry(
       `${API_URL}/api/users/posting-status/${lensProfileId}`,
       { method: 'GET' }
     );
-
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Failed to get posting status');
     }
-
     return response.json();
   }
 };
-
 // Payment Service
 export const paymentService = {
   verifyPayment: async (params: VerifyPaymentParams) => {
@@ -210,39 +176,33 @@ export const paymentService = {
         body: JSON.stringify(params)
       }
     );
-
     if (!response.ok) {
       const data = await response.json();
       throw new Error(data.error || 'Payment verification failed');
     }
     return response.json();
   },
-
   getPaymentHistory: async (lensProfileId: string) => {
     const response = await fetchWithRetry(
       `${API_URL}/api/payments/history/${lensProfileId}`,
       { method: 'GET' }
     );
-
     if (!response.ok) {
       throw new Error('Failed to fetch payment history');
     }
     return response.json();
   },
-
   getPlans: async () => {
     const response = await fetchWithRetry(
       `${API_URL}/api/payments/plans`,
       { method: 'GET' }
     );
-
     if (!response.ok) {
       throw new Error('Failed to fetch plans');
     }
     return response.json();
   }
 };
-
 // Types
 interface CreatePostDTO {
   content: string;
@@ -250,7 +210,6 @@ interface CreatePostDTO {
   lensProfileId: string;
   handle: string;
 }
-
 interface VerifyPaymentParams {
   paymentId: string;
   userAddress: string;
