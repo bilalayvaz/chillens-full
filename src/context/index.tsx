@@ -21,7 +21,7 @@ if (!projectId) {
 const metadata = {
   name: 'chillens',
   description: 'A Fun Lens Tool',
-  url: 'https://appkitexampleapp.com', // origin must match your domain & subdomain
+  url: 'https://www.chillens.xyz/', // origin must match your domain & subdomain
   icons: ['https://avatars.githubusercontent.com/u/179229932']
 }
 
