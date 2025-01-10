@@ -4,6 +4,7 @@ import { useLogout, ProfileSession } from '@lens-protocol/react-web';
 import { useDisconnect } from 'wagmi';
 import Image from 'next/image';
 import { authService } from '../services/authService';
+import { useAppStore } from '../store/useAppStore';
 
 interface ProfileDropdownProps {
   session: ProfileSession;
@@ -15,6 +16,7 @@ const ProfileDropdown = ({ session }: ProfileDropdownProps) => {
   const { disconnect } = useDisconnect();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { reset } = useAppStore();
 
   const handleProfileClick = () => {
     setDropdownOpen(false);
@@ -46,6 +48,8 @@ const ProfileDropdown = ({ session }: ProfileDropdownProps) => {
   
       // En son bizim auth sisteminden çık
       await authService.logout();
+      reset();
+      
   
       // Ana sayfaya yönlendir
       router.push('/');
