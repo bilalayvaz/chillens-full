@@ -150,7 +150,7 @@ export function PostModal({ isOpen, onClose }: PostModalProps) {
         )}
 
         {status === 'success' && (
-          <div className="text-center mb-6">
+          <div className="text-center">
             <p className="text-lg">
               <span className="text-red-500">FUNNIEST</span> POST IS PUBLISHED
             </p>
