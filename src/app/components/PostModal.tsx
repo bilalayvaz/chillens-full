@@ -151,14 +151,14 @@ export function PostModal({ isOpen, onClose }: PostModalProps) {
 
         {status === 'success' && (
           <div className="text-center mb-6">
-            <h3 className="text-xl mb-2">
-              <span className="text-red-500 font-medium">FUNNIEST</span> POST IS PUBLISHED
-            </h3>
+            <p className="text-lg mb-2">
+              <span className="text-red-500">FUNNIEST</span> POST IS PUBLISHED
+            </p>
             <p className="text-lg">FOR YOU! GO AND CHECK YOUR</p>
             <p className="text-lg mb-4">PROFILE TO SEE IT.</p>
             <button
               onClick={onClose}
-              className="mt-4 px-8 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+              className="mt-4 px-6 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
             >
               OK
             </button>
