@@ -98,26 +98,33 @@ export const postService = {
 // AI Post Service
 export const aipostService = {
   getRandomPost: async () => {
-    const response = await fetchWithRetry(
-      `${API_URL}/api/aiposts/random`,
-      { method: 'GET' }
-    );
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || 'Failed to fetch random post');
-    }
-    return response.json();
-  },
-  updateStatus: async (postId: string) => {
-    const response = await fetchWithRetry(
-      `${API_URL}/api/aiposts/${postId}`,
-      {
-        method: 'PATCH',
-        body: JSON.stringify({ status: true })
+    try {
+      console.log('Fetching random post...');
+      const response = await fetchWithRetry(
+        `${API_URL}/api/aiposts/random`,
+        { 
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json'
+          }
+        },
+        5  // Retry sayısını artırdık
+      );
+  
+      if (response.status === 429) {
+        throw new Error('Please wait a few minutes before creating another post');
       }
-    );
-    if (!response.ok) {
-      throw new Error('Failed to update post status');
+  
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Random post error:', errorData);
+        throw new Error(errorData.message || 'Failed to fetch random post');
+      }
+  
+      return response.json();
+    } catch (error) {
+      console.error('Get random post error:', error);
+      throw error;
     }
   }
 };
