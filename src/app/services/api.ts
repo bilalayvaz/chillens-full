@@ -7,7 +7,7 @@ const getHeaders = () => ({
 async function fetchWithRetry(
   url: string,
   options: RequestInit,
-  maxAttempts = 3
+  maxAttempts = 2
 ): Promise<Response> {
   let lastError: Error;
   let currentAttempt = 0;
