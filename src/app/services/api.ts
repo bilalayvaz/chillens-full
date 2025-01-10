@@ -1,9 +1,10 @@
 // services/api.ts
-import { authService } from './authService';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 const getHeaders = () => ({
-  'Content-Type': 'application/json'
+  'Content-Type': 'application/json',
+  'Accept': 'application/json'
 });
+
 async function fetchWithRetry(
   url: string,
   options: RequestInit,
@@ -14,39 +15,22 @@ async function fetchWithRetry(
   
   while (currentAttempt < maxAttempts) {
     try {
-      const response = await fetch(url, {
+      const finalOptions = {
         ...options,
-        credentials: 'include',
+        credentials: 'include' as const,
         headers: {
           ...getHeaders(),
           ...options.headers
         }
-      });
-      // 401 hatası alırsak
-      if (response.status === 401) {
-        try {
-          const verifyResult = await authService.verifyToken();
-          if (verifyResult.valid) {
-            // Token hala geçerliyse tekrar dene
-            currentAttempt++;
-            continue;
-          }
-          // Token geçersizse ve son deneme değilse yeni token al
-          if (currentAttempt < maxAttempts - 1) {
-            currentAttempt++;
-            // 1 saniye bekle
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            continue;
-          }
-        } catch (verifyError) {
-          console.error('Token verify error:', verifyError);
-        }
-      }
-      // Diğer tüm hata kodları için
+      };
+
+      const response = await fetch(url, finalOptions);
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
+
       return response;
     } catch (error) {
       console.error(`Attempt ${currentAttempt + 1} failed:`, error);
