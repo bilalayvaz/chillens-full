@@ -1,10 +1,9 @@
 // services/api.ts
+import { authService } from './authService';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 const getHeaders = () => ({
-  'Content-Type': 'application/json',
-  'Accept': 'application/json',
+  'Content-Type': 'application/json'
 });
-
 async function fetchWithRetry(
   url: string,
   options: RequestInit,
@@ -15,22 +14,39 @@ async function fetchWithRetry(
   
   while (currentAttempt < maxAttempts) {
     try {
-      const finalOptions = {
+      const response = await fetch(url, {
         ...options,
-        credentials: 'include' as const,
+        credentials: 'include',
         headers: {
           ...getHeaders(),
           ...options.headers
         }
-      };
-
-      const response = await fetch(url, finalOptions);
-
+      });
+      // 401 hatası alırsak
+      if (response.status === 401) {
+        try {
+          const verifyResult = await authService.verifyToken();
+          if (verifyResult.valid) {
+            // Token hala geçerliyse tekrar dene
+            currentAttempt++;
+            continue;
+          }
+          // Token geçersizse ve son deneme değilse yeni token al
+          if (currentAttempt < maxAttempts - 1) {
+            currentAttempt++;
+            // 1 saniye bekle
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            continue;
+          }
+        } catch (verifyError) {
+          console.error('Token verify error:', verifyError);
+        }
+      }
+      // Diğer tüm hata kodları için
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
-
       return response;
     } catch (error) {
       console.error(`Attempt ${currentAttempt + 1} failed:`, error);
@@ -82,34 +98,15 @@ export const postService = {
 // AI Post Service
 export const aipostService = {
   getRandomPost: async () => {
-    try {
-      console.log('Fetching random post...');
-      const response = await fetchWithRetry(
-        `${API_URL}/api/aiposts/random`,
-        { 
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json'
-          }
-        },
-        5
-      );
-  
-      if (response.status === 429) {
-        throw new Error('Please wait a few minutes before creating another post');
-      }
-  
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Random post error:', errorData);
-        throw new Error(errorData.message || 'Failed to fetch random post');
-      }
-  
-      return response.json();
-    } catch (error) {
-      console.error('Get random post error:', error);
-      throw error;
+    const response = await fetchWithRetry(
+      `${API_URL}/api/aiposts/random`,
+      { method: 'GET' }
+    );
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to fetch random post');
     }
+    return response.json();
   },
   updateStatus: async (postId: string) => {
     const response = await fetchWithRetry(
