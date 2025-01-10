@@ -108,7 +108,7 @@ export const aipostService = {
             'Accept': 'application/json'
           }
         },
-        5  // Retry sayısını artırdık
+        5
       );
   
       if (response.status === 429) {
@@ -124,6 +124,28 @@ export const aipostService = {
       return response.json();
     } catch (error) {
       console.error('Get random post error:', error);
+      throw error;
+    }
+  },
+
+  updateStatus: async (postId: string) => {
+    try {
+      const response = await fetchWithRetry(
+        `${API_URL}/api/aiposts/${postId}`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({ status: true })
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to update post status');
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error('Update status error:', error);
       throw error;
     }
   }
