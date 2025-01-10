@@ -2,7 +2,8 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 const getHeaders = () => ({
   'Content-Type': 'application/json',
-  'Accept': 'application/json'
+  'Accept': 'application/json',
+  'Origin': 'https://www.chillens.xyz'
 });
 
 async function fetchWithRetry(
