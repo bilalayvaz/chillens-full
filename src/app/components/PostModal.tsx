@@ -183,8 +183,7 @@ export function PostModal({ isOpen, onClose }: PostModalProps) {
       <div className="text-center">
         <h3 className="text-xl mb-4">Please Wait</h3>
         <p className="text-gray-600 mb-4">
-          After submitting a post, you must wait 3 minutes before posting again. 
-          This measure is in place to prevent spam.
+        You must wait 3 minutes before posting again.
         </p>
         <button
           onClick={onClose}
