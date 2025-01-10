@@ -127,26 +127,16 @@ export const aipostService = {
       throw error;
     }
   },
-
   updateStatus: async (postId: string) => {
-    try {
-      const response = await fetchWithRetry(
-        `${API_URL}/api/aiposts/${postId}`,
-        {
-          method: 'PATCH',
-          body: JSON.stringify({ status: true })
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Failed to update post status');
+    const response = await fetchWithRetry(
+      `${API_URL}/api/aiposts/${postId}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ status: true })
       }
-
-      return response.json();
-    } catch (error) {
-      console.error('Update status error:', error);
-      throw error;
+    );
+    if (!response.ok) {
+      throw new Error('Failed to update post status');
     }
   }
 };
