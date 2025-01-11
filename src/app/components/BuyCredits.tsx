@@ -239,7 +239,14 @@ function BuyCredits() {
 
           <button
             onClick={isApproved ? handlePurchase : handleApprove}
-            disabled={!selectedPlan || isWritePending || isApproving || isConfirming}
+            disabled={
+              !selectedPlan || 
+              isWritePending || 
+              isApproving || 
+              isConfirming || 
+              !balance || 
+              balance.value < (selectedPlan?.tokenAmount || BigInt(0))
+            }
             className="w-full bg-red-500 text-white py-3 rounded-lg disabled:bg-gray-300 
                      hover:bg-red-600 transition-colors flex items-center justify-center"
           >
@@ -254,6 +261,8 @@ function BuyCredits() {
               ? 'Approving BONSAI...'
               : !isApproved && selectedPlan
               ? 'Approve BONSAI'
+              : !balance || (selectedPlan && balance.value < selectedPlan.tokenAmount)
+              ? `Insufficient BONSAI Balance`
               : selectedPlan 
                 ? `Buy ${selectedPlan.credits} Credits` 
                 : 'Select a Plan'
