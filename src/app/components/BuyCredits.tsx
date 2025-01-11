@@ -185,7 +185,7 @@ function BuyCredits() {
               <p>You are currently on the wrong network. This transaction requires Polygon network.</p>
               <button
                 onClick={() => switchChain({ chainId: polygon.id })}
-                className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors w-fit"
+                className="bg-red-500 text-white py-2 px-4 hover:bg-red-600 transition-colors w-fit"
               >
                 Switch to Polygon
               </button>
