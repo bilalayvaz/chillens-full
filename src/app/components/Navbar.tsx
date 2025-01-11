@@ -35,7 +35,7 @@ export default function Navbar() {
       <div className="container flex justify-between items-center py-2">
         <div className="flex flex-col items-left">
           <Link 
-            href="/" 
+            href="/feed" 
             className={`font-bold text-red-500 ${showCredits ? 'text-2xl' : 'text-3xl'} mb-1`}
           >
             CHILLENS
