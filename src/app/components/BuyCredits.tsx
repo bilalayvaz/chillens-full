@@ -54,9 +54,15 @@ function BuyCredits() {
     selectedPlan?.tokenAmount || BigInt(0)
   )
 
+  // Direkt olarak chainId kontrolü yapıyoruz
+  const isPolygonNetwork = chainId === polygon.id
+
+  // Ağ değiştiğinde ve wrong network olduğunda planı sıfırla
   useEffect(() => {
-    setIsWrongNetwork(chainId !== polygon.id)
-  }, [chainId])
+    if (!isPolygonNetwork && selectedPlan) {
+      setSelectedPlan(null)
+    }
+  }, [chainId, isPolygonNetwork, selectedPlan])
 
   useEffect(() => {
     if (selectedPlan) {
@@ -177,7 +183,7 @@ function BuyCredits() {
         </Alert>
       )}
 
-      {isWrongNetwork ? (
+      {!isPolygonNetwork ? (
         <Alert>
           <AlertTitle>Wrong Network</AlertTitle>
           <AlertDescription className="mt-2">
@@ -185,7 +191,7 @@ function BuyCredits() {
               <p>You are currently on the wrong network. This transaction requires Polygon network.</p>
               <button
                 onClick={() => switchChain({ chainId: polygon.id })}
-                className="bg-red-500 text-white py-2 px-4 hover:bg-red-600 transition-colors w-fit"
+                className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors w-fit"
               >
                 Switch to Polygon
               </button>
