@@ -259,10 +259,10 @@ function BuyCredits() {
               ? 'Processing...' 
               : isApproving
               ? 'Approving BONSAI...'
-              : !isApproved && selectedPlan
-              ? 'Approve BONSAI'
               : !balance || (selectedPlan && balance.value < selectedPlan.tokenAmount)
               ? `Insufficient BONSAI Balance`
+              : !isApproved && selectedPlan
+              ? 'Approve BONSAI'
               : selectedPlan 
                 ? `Buy ${selectedPlan.credits} Credits` 
                 : 'Select a Plan'
