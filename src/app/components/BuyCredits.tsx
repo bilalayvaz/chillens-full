@@ -44,7 +44,6 @@ function BuyCredits() {
   const chainId = useChainId()
   const { switchChain } = useSwitchChain()
 
-  // Contract interaction hooks
   const { data: hash, writeContract, isPending: isWritePending } = useWriteContract()
   const { data: receipt, isLoading: isConfirming, isSuccess: isPaymentSuccess } = useWaitForTransactionReceipt({
     hash,
@@ -55,12 +54,10 @@ function BuyCredits() {
     selectedPlan?.tokenAmount || BigInt(0)
   )
 
-  // Check and update network status
   useEffect(() => {
     setIsWrongNetwork(chainId !== polygon.id)
   }, [chainId])
 
-  // Reset states when plan changes
   useEffect(() => {
     if (selectedPlan) {
       setError(null)
@@ -68,14 +65,12 @@ function BuyCredits() {
     }
   }, [selectedPlan])
 
-  // Authentication kontrolü
   useEffect(() => {
     if (session !== undefined && !isAuthenticatedSession(session)) {
       router.push('/connect')
     }
   }, [session, router])
 
-  // Transaction başarılı olduğunda backend'e bildir
   const verifyPayment = useCallback(async (txHash: string) => {
     if (!selectedPlan || !isAuthenticatedSession(session)) {
       return
@@ -101,7 +96,6 @@ function BuyCredits() {
       if (result.success) {
         await refreshCredits(session.profile.id, session.profile.handle?.fullHandle || '')
 
-        // Google Analytics Event
         window.dataLayer?.push({
           event: 'purchase_credits',
           category: 'monetization',
@@ -121,7 +115,6 @@ function BuyCredits() {
     }
   }, [session, selectedPlan, refreshCredits])
 
-  // Receipt geldiğinde verification'ı başlat
   useEffect(() => {
     if (receipt?.transactionHash && isPaymentSuccess) {
       verifyPayment(receipt.transactionHash)
@@ -169,7 +162,7 @@ function BuyCredits() {
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-6">
       <h2 className="text-2xl font-bold">Buy Credits</h2>
-     
+      
       {error && (
         <Alert variant="destructive">
           <AlertTitle>Error</AlertTitle>
@@ -184,69 +177,79 @@ function BuyCredits() {
         </Alert>
       )}
 
-      {isWrongNetwork && (
+      {isWrongNetwork ? (
         <Alert>
           <AlertTitle>Wrong Network</AlertTitle>
-          <AlertDescription>
-            Please switch to the Polygon network to continue. Click the button below to switch automatically.
+          <AlertDescription className="mt-2">
+            <div className="flex flex-col gap-4">
+              <p>You are currently on the wrong network. This transaction requires Polygon network.</p>
+              <button
+                onClick={() => switchChain({ chainId: polygon.id })}
+                className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors w-fit"
+              >
+                Switch to Polygon
+              </button>
+            </div>
           </AlertDescription>
         </Alert>
-      )}
-     
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8">
-        {plans.map((plan, index) => (
-          <div
-            key={`${plan.credits}-${plan.price}`}
-            onClick={() => !isWritePending && !isApproving && !isConfirming && setSelectedPlan(plan)}
-            className={`p-4 border transition-colors ${
-              selectedPlan === plan ? 'border-red-500 bg-red-50' : 'hover:border-red-200'
-            } ${
-              isWritePending || isApproving || isConfirming
-                ? 'opacity-50 cursor-not-allowed'
-                : 'cursor-pointer'
-            }`}
-          >
-            <div className="relative">
-              <div className="text-xl font-bold mb-2 text-red-500">{plan.credits} Credits</div>
-              <div className="text-gray-600">{plan.price} BONSAI</div>
-              {index !== 0 && (
-                <Image
-                  src={`/${index}.svg`}
-                  alt="Icon"
-                  className="absolute top-0 right-0 w-16 h-16"
-                  width="63"
-                  height="63"
-                  style={{ right: '-38px', top: '-38px' }}
-                />
-              )}
-              <div className="text-gray-600 text-sm mt-2">Network: POLYGON</div>
-            </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8">
+            {plans.map((plan, index) => (
+              <div
+                key={`${plan.credits}-${plan.price}`}
+                onClick={() => !isWritePending && !isApproving && !isConfirming && setSelectedPlan(plan)}
+                className={`p-4 border transition-colors ${
+                  selectedPlan === plan ? 'border-red-500 bg-red-50' : 'hover:border-red-200'
+                } ${
+                  isWritePending || isApproving || isConfirming
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'cursor-pointer'
+                }`}
+              >
+                <div className="relative">
+                  <div className="text-xl font-bold mb-2 text-red-500">{plan.credits} Credits</div>
+                  <div className="text-gray-600">{plan.price} BONSAI</div>
+                  {index !== 0 && (
+                    <Image
+                      src={`/${index}.svg`}
+                      alt="Icon"
+                      className="absolute top-0 right-0 w-16 h-16"
+                      width="63"
+                      height="63"
+                      style={{ right: '-38px', top: '-38px' }}
+                    />
+                  )}
+                  <div className="text-gray-600 text-sm mt-2">Network: POLYGON</div>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      <button
-        onClick={isApproved ? handlePurchase : handleApprove}
-        disabled={!selectedPlan || isWritePending || isApproving || isConfirming}
-        className="w-full bg-red-500 text-white py-3 rounded-lg disabled:bg-gray-300 
-                 hover:bg-red-600 transition-colors flex items-center justify-center"
-      >
-        {(isWritePending || isApproving || isConfirming) && (
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        )}
-        {isConfirming 
-          ? 'Confirming Transaction...'
-          : isWritePending 
-          ? 'Processing...' 
-          : isApproving
-          ? 'Approving BONSAI...'
-          : !isApproved && selectedPlan
-          ? 'Approve BONSAI'
-          : selectedPlan 
-            ? `Buy ${selectedPlan.credits} Credits` 
-            : 'Select a Plan'
-        }
-      </button>
+          <button
+            onClick={isApproved ? handlePurchase : handleApprove}
+            disabled={!selectedPlan || isWritePending || isApproving || isConfirming}
+            className="w-full bg-red-500 text-white py-3 rounded-lg disabled:bg-gray-300 
+                     hover:bg-red-600 transition-colors flex items-center justify-center"
+          >
+            {(isWritePending || isApproving || isConfirming) && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            {isConfirming 
+              ? 'Confirming Transaction...'
+              : isWritePending 
+              ? 'Processing...' 
+              : isApproving
+              ? 'Approving BONSAI...'
+              : !isApproved && selectedPlan
+              ? 'Approve BONSAI'
+              : selectedPlan 
+                ? `Buy ${selectedPlan.credits} Credits` 
+                : 'Select a Plan'
+            }
+          </button>
+        </>
+      )}
     </div>
   )
 }
