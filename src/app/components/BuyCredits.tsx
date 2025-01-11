@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSession, Session, ProfileSession } from '@lens-protocol/react-web'
-import { useAccount, useChainId, useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
+import { useAccount, useChainId, useWaitForTransactionReceipt, useWriteContract, useSwitchChain } from 'wagmi'
 import { useTokenApproval } from '../hooks/useTokenApproval'
 import { useCreditPlans, type CreditPlan } from '../hooks/useCreditPlans'
 import { CONTRACTS, ChillensCreditsABI } from '../config/contracts'
@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation'
 import { useAppStore } from '../store/useAppStore'
 import { withAuth } from '../components/hoc/withAuth';
 import Image from 'next/image';
+import { polygon } from 'wagmi/chains'
 
 function LoadingSpinner() {
   return (
@@ -28,11 +29,12 @@ function isAuthenticatedSession(session: Session | null | undefined): session is
   return 'profile' in session && !!session.profile?.id;
 }
 
-  function BuyCredits() {
+function BuyCredits() {
   const router = useRouter()
   const [selectedPlan, setSelectedPlan] = useState<CreditPlan | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [isWrongNetwork, setIsWrongNetwork] = useState(false)
   const processedTransactions = useRef(new Set<string>())
   const refreshCredits = useAppStore(state => state.refreshCredits)
 
@@ -40,6 +42,7 @@ function isAuthenticatedSession(session: Session | null | undefined): session is
   const { data: session } = useSession()
   const { address } = useAccount()
   const chainId = useChainId()
+  const { switchChain } = useSwitchChain()
 
   // Contract interaction hooks
   const { data: hash, writeContract, isPending: isWritePending } = useWriteContract()
@@ -51,6 +54,11 @@ function isAuthenticatedSession(session: Session | null | undefined): session is
     CONTRACTS.BONSAI.address,
     selectedPlan?.tokenAmount || BigInt(0)
   )
+
+  // Check and update network status
+  useEffect(() => {
+    setIsWrongNetwork(chainId !== polygon.id)
+  }, [chainId])
 
   // Reset states when plan changes
   useEffect(() => {
@@ -93,14 +101,14 @@ function isAuthenticatedSession(session: Session | null | undefined): session is
       if (result.success) {
         await refreshCredits(session.profile.id, session.profile.handle?.fullHandle || '')
 
-          // Google Analytics Event
-          window.dataLayer?.push({
-            event: 'purchase_credits',
-            category: 'monetization',
-            user: session.profile.handle?.fullHandle || 'unknown_user',
-            creditAmount: selectedPlan?.credits,
-            price: selectedPlan?.price
-          });
+        // Google Analytics Event
+        window.dataLayer?.push({
+          event: 'purchase_credits',
+          category: 'monetization',
+          user: session.profile.handle?.fullHandle || 'unknown_user',
+          creditAmount: selectedPlan?.credits,
+          price: selectedPlan?.price
+        });
 
         setSuccess(`Successfully purchased ${selectedPlan.credits} credits!`)
         setSelectedPlan(null)
@@ -126,9 +134,14 @@ function isAuthenticatedSession(session: Session | null | undefined): session is
       return
     }
 
-    if (chainId !== 137) {
-      setError('Please switch to Polygon network')
-      return
+    if (isWrongNetwork) {
+      try {
+        await switchChain({ chainId: polygon.id })
+        return
+      } catch (error: any) {
+        setError('Failed to switch network. Please switch to Polygon manually.')
+        return
+      }
     }
 
     setError(null)
@@ -170,39 +183,47 @@ function isAuthenticatedSession(session: Session | null | undefined): session is
           <AlertDescription>{success}</AlertDescription>
         </Alert>
       )}
-     
-     <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8">
-  {plans.map((plan, index) => (
-    <div
-      key={`${plan.credits}-${plan.price}`}
-      onClick={() => !isWritePending && !isApproving && !isConfirming && setSelectedPlan(plan)}
-      className={`p-4 border transition-colors ${
-        selectedPlan === plan ? 'border-red-500 bg-red-50' : 'hover:border-red-200'
-      } ${
-        isWritePending || isApproving || isConfirming
-          ? 'opacity-50 cursor-not-allowed'
-          : 'cursor-pointer'
-      }`}
-    >
-      <div className="relative">
-        <div className="text-xl font-bold mb-2 text-red-500">{plan.credits} Credits</div>
-        <div className="text-gray-600">{plan.price} BONSAI</div>
-        {index !== 0 && (
-          <Image
-            src={`/${index}.svg`}
-            alt="Icon"
-            className="absolute top-0 right-0 w-16 h-16"
-            width="63"
-            height="63"
-            style={{ right: '-38px', top: '-38px' }}
-          />
-        )}
-        <div className="text-gray-600 text-sm mt-2">Network: POLYGON</div>
-      </div>
-    </div>
-  ))}
-</div>
 
+      {isWrongNetwork && (
+        <Alert>
+          <AlertTitle>Wrong Network</AlertTitle>
+          <AlertDescription>
+            Please switch to the Polygon network to continue. Click the button below to switch automatically.
+          </AlertDescription>
+        </Alert>
+      )}
+     
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8">
+        {plans.map((plan, index) => (
+          <div
+            key={`${plan.credits}-${plan.price}`}
+            onClick={() => !isWritePending && !isApproving && !isConfirming && setSelectedPlan(plan)}
+            className={`p-4 border transition-colors ${
+              selectedPlan === plan ? 'border-red-500 bg-red-50' : 'hover:border-red-200'
+            } ${
+              isWritePending || isApproving || isConfirming
+                ? 'opacity-50 cursor-not-allowed'
+                : 'cursor-pointer'
+            }`}
+          >
+            <div className="relative">
+              <div className="text-xl font-bold mb-2 text-red-500">{plan.credits} Credits</div>
+              <div className="text-gray-600">{plan.price} BONSAI</div>
+              {index !== 0 && (
+                <Image
+                  src={`/${index}.svg`}
+                  alt="Icon"
+                  className="absolute top-0 right-0 w-16 h-16"
+                  width="63"
+                  height="63"
+                  style={{ right: '-38px', top: '-38px' }}
+                />
+              )}
+              <div className="text-gray-600 text-sm mt-2">Network: POLYGON</div>
+            </div>
+          </div>
+        ))}
+      </div>
 
       <button
         onClick={isApproved ? handlePurchase : handleApprove}

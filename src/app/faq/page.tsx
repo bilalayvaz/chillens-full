@@ -33,11 +33,11 @@ export default function FAQPage() {
             </p>
             <p className="text-md mb-4">
               <strong>4. What’s roadmap?</strong><br />
-              Click here to check <a href="/roadmap"> <span className="text-[#ff3131]">roadmap!</span></a>
+              Click <a href="/roadmap"> <span className="text-[#ff3131]">here</span></a> to check <a href="/roadmap"> <span className="text-[#ff3131]">roadmap!</span></a>
             </p>
             <p className="text-md mb-4">
               <strong>5. How it works?</strong><br />
-              Every user has <span className="text-[#ff3131]">7 free Credits</span> when they login with Lens. Users can click <span className="text-[#ff3131]">SHARE NOW</span> button to share something funny. When you shared something it will cost <span className="text-[#ff3131]">1 Credit</span>. If your credits are done, you can refill with only <span className="text-[#ff3131]">$BONSAI</span> or <span className="text-[#ff3131]">$SOCIAL</span> by clicking <span className="text-[#ff3131]">+</span> button.
+              Every user has <span className="text-[#ff3131]">7 free Credits</span> when they login with Lens. Users can click <span className="text-[#ff3131]">SHARE NOW</span> button to share something funny. When you shared something it will cost <span className="text-[#ff3131]">1 Credit</span>. If your credits are done, you can refill with only <span className="text-[#ff3131]">$BONSAI</span> by clicking <span className="text-[#ff3131]">+</span> button.
             </p>
             <p className="text-md mb-4">
               <strong>6. What’s our official social media channels?</strong><br />
