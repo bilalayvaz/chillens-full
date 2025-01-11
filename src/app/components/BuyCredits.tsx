@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSession, Session, ProfileSession } from '@lens-protocol/react-web'
-import { useAccount, useChainId, useWaitForTransactionReceipt, useWriteContract, useSwitchChain } from 'wagmi'
+import { useAccount, useChainId, useWaitForTransactionReceipt, useWriteContract, useSwitchChain, useBalance } from 'wagmi'
 import { useTokenApproval } from '../hooks/useTokenApproval'
 import { useCreditPlans, type CreditPlan } from '../hooks/useCreditPlans'
 import { CONTRACTS, ChillensCreditsABI } from '../config/contracts'
@@ -55,6 +55,11 @@ function BuyCredits() {
   )
 
   // Direkt olarak chainId kontrolü yapıyoruz
+  const { data: balance } = useBalance({
+    address,
+    token: CONTRACTS.BONSAI.address as `0x${string}`,
+  })
+
   const isPolygonNetwork = chainId === polygon.id
 
   // Ağ değiştiğinde ve wrong network olduğunda planı sıfırla
