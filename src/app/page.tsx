@@ -1,6 +1,5 @@
 'use client';
 
-import React, { useEffect } from 'react';
 import Image from 'next/image';
 import Navbar from './components/Navbar';
 import { useSession } from '@lens-protocol/react-web';
