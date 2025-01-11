@@ -11,11 +11,11 @@ export default function LandingPage() {
   const router = useRouter();
   const { data: session } = useSession();
 
-  useEffect(() => {
+  /* useEffect(() => {
     if (session?.type === 'WITH_PROFILE') {
       router.push('/feed');
     }
-  }, [session, router]);
+  }, [session, router]); */
 
   const handleButtonClick = () => {
     if (session?.type === 'WITH_PROFILE') {
