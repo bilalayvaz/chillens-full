@@ -1,7 +1,7 @@
 import { Address } from 'viem'
 
 export const CONTRACTS = {
-  CHILLENS: {
+  CHILLENS_CREDITS: {
     address: '0x60dF43dcE4224d1E1e1371437Ef8fD0Ad1c55C96' as Address,
     chainId: 137
   },

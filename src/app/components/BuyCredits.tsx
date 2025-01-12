@@ -34,7 +34,6 @@ function BuyCredits() {
   const [selectedPlan, setSelectedPlan] = useState<CreditPlan | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const [isWrongNetwork, setIsWrongNetwork] = useState(false)
   const processedTransactions = useRef(new Set<string>())
   const refreshCredits = useAppStore(state => state.refreshCredits)
 
@@ -54,7 +53,6 @@ function BuyCredits() {
     selectedPlan?.tokenAmount || BigInt(0)
   )
 
-  // Direkt olarak chainId kontrolü yapıyoruz
   const { data: balance } = useBalance({
     address,
     token: CONTRACTS.BONSAI.address as `0x${string}`,
@@ -82,6 +80,10 @@ function BuyCredits() {
     }
   }, [session, router])
 
+  const createPaymentId = useCallback((timestamp: string) => {
+    return `0x${Buffer.from(`${timestamp}-${address}-${Date.now()}`).toString('hex')}` as `0x${string}`;
+  }, [address]);
+
   const verifyPayment = useCallback(async (txHash: string) => {
     if (!selectedPlan || !isAuthenticatedSession(session)) {
       return
@@ -93,9 +95,11 @@ function BuyCredits() {
 
     try {
       processedTransactions.current.add(txHash)
+      const timestamp = Date.now().toString();
+      const paymentId = createPaymentId(timestamp);
       
       const result = await paymentService.verifyPayment({
-        paymentId: Date.now().toString(),
+        paymentId,
         userAddress: session.profile.id,
         token: CONTRACTS.BONSAI.address,
         amount: selectedPlan.tokenAmount.toString(),
@@ -124,7 +128,7 @@ function BuyCredits() {
         setError('Payment verification failed: ' + (error?.message || 'Unknown error'))
       }
     }
-  }, [session, selectedPlan, refreshCredits])
+  }, [session, selectedPlan, refreshCredits, createPaymentId])
 
   useEffect(() => {
     if (receipt?.transactionHash && isPaymentSuccess) {
@@ -138,7 +142,7 @@ function BuyCredits() {
       return
     }
 
-    if (isWrongNetwork) {
+    if (!isPolygonNetwork) {
       try {
         await switchChain({ chainId: polygon.id })
         return
@@ -150,11 +154,14 @@ function BuyCredits() {
 
     setError(null)
     try {
+      const timestamp = Date.now().toString();
+      const paymentId = createPaymentId(timestamp);
+
       await writeContract({
         address: CONTRACTS.CHILLENS_CREDITS.address,
         abi: ChillensCreditsABI,
         functionName: 'makePayment',
-        args: [selectedPlan.tokenAmount, Date.now().toString()]
+        args: [selectedPlan.tokenAmount, paymentId]
       })
     } catch (error: any) {
       console.error('Purchase error:', error)
