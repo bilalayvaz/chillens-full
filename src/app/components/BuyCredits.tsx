@@ -60,7 +60,7 @@ function BuyCredits() {
 
   const isPolygonNetwork = chainId === polygon.id
 
-  // Ağ değiştiğinde ve wrong network olduğunda planı sıfırla
+  // Ağ değiştiğinde ve Wrong network olduğunda planı sıfırla
   useEffect(() => {
     if (!isPolygonNetwork && selectedPlan) {
       setSelectedPlan(null)
