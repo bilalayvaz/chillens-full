@@ -1,24 +1,36 @@
-// scripts/deploy.ts
-import { ethers } from "hardhat";
+import { ethers,run } from "hardhat";
+import { CONTRACTS } from "../../src/app/config/contracts";
 
 async function main() {
-  const [deployer] = await ethers.getSigners();
+  console.log("Deploying Chillens contract...");
 
-  console.log("Deploying contracts with the account:", deployer.address);
-  console.log("Account balance:", (await deployer.provider.getBalance(deployer.address)).toString());
+  const Chillens = await ethers.getContractFactory("Chillens");
+  const chillens = await Chillens.deploy(CONTRACTS.BONSAI.address);
 
-  const ChillensCredits = await ethers.getContractFactory("ChillensCredits");
-  const chillensCredits = await ChillensCredits.deploy();
+  await chillens.waitForDeployment();
 
-  await chillensCredits.waitForDeployment();
+  const contractAddress = await chillens.getAddress();
+  console.log(`Chillens deployed to: ${contractAddress}`);
 
-  const address = await chillensCredits.getAddress();
-  console.log("ChillensCredits deployed to:", address);
+  // Wait for few block confirmations
+  console.log("Waiting for block confirmations...");
+  await chillens.deploymentTransaction()?.wait(5);
+
+  // Verify the contract
+  console.log("Verifying contract...");
+  try {
+    await run("verify:verify", {
+      address: contractAddress,
+      constructorArguments: [CONTRACTS.BONSAI.address],
+      contract: "contracts/Chillens.sol:Chillens" // Bu satırı ekledik
+    });
+    console.log("Contract verified successfully");
+  } catch (error) {
+    console.error("Error verifying contract:", error);
+  }
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

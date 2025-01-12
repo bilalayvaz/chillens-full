@@ -1,8 +1,8 @@
 import { Address } from 'viem'
 
 export const CONTRACTS = {
-  CHILLENS_CREDITS: {
-    address: '0xfE7b7E234D6fdf298c034B28564b78565cDDB100' as Address,
+  CHILLENS: {
+    address: '0x60dF43dcE4224d1E1e1371437Ef8fD0Ad1c55C96' as Address, 
     chainId: 137
   },
   BONSAI: {
@@ -11,11 +11,145 @@ export const CONTRACTS = {
   }
 } as const
 
-export const ChillensCreditsABI = [
+export const ChillensABI = [
   {
-    inputs: [],
+    inputs: [
+      {
+        internalType: "address",
+        name: "_bonsaiToken",
+        type: "address"
+      }
+    ],
     stateMutability: "nonpayable",
     type: "constructor"
+  },
+  {
+    inputs: [],
+    name: "Blacklisted",
+    type: "error"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "currentPrice",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "maxPrice",
+        type: "uint256"
+      }
+    ],
+    name: "GasPriceTooHigh",
+    type: "error"
+  },
+  {
+    inputs: [],
+    name: "InsufficientBalance",
+    type: "error"
+  },
+  {
+    inputs: [],
+    name: "InvalidAddress",
+    type: "error"
+  },
+  {
+    inputs: [],
+    name: "InvalidAmount",
+    type: "error"
+  },
+  {
+    inputs: [],
+    name: "PaymentIDUsed",
+    type: "error"
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "payment",
+        type: "string"
+      }
+    ],
+    name: "createPaymentId",
+    outputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "token",
+        type: "address"
+      },
+      {
+        internalType: "address",
+        name: "to",
+        type: "address"
+      },
+      {
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256"
+      }
+    ],
+    name: "emergencyWithdraw",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "getContractBalance",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "getCurrentMaxGasPrice",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "paymentId",
+        type: "bytes32"
+      }
+    ],
+    name: "isPaymentIdUsed",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
   },
   {
     inputs: [
@@ -25,9 +159,9 @@ export const ChillensCreditsABI = [
         type: "uint256"
       },
       {
-        internalType: "string",
+        internalType: "bytes32",
         name: "paymentId",
-        type: "string"
+        type: "bytes32"
       }
     ],
     name: "makePayment",
@@ -37,14 +171,7 @@ export const ChillensCreditsABI = [
   },
   {
     inputs: [],
-    name: "pause",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "requestEmergencyWithdraw",
+    name: "pauseContract",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
@@ -69,7 +196,43 @@ export const ChillensCreditsABI = [
   },
   {
     inputs: [],
-    name: "unpause",
+    name: "unpauseContract",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_maxWithdrawAmount",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "_maxPaymentAmount",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "_minPaymentAmount",
+        type: "uint256"
+      }
+    ],
+    name: "updateLimits",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "newMultiplier",
+        type: "uint256"
+      }
+    ],
+    name: "updateMaxGasPriceMultiplier",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
@@ -85,19 +248,6 @@ export const ChillensCreditsABI = [
     name: "withdrawTokens",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "getTokenBalance",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-      }
-    ],
-    stateMutability: "view",
     type: "function"
   }
 ] as const;
