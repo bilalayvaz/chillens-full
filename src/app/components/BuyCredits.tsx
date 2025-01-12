@@ -60,7 +60,6 @@ function BuyCredits() {
 
   const isPolygonNetwork = chainId === polygon.id
 
-  // Ağ değiştiğinde ve Wrong network olduğunda planı sıfırla
   useEffect(() => {
     if (!isPolygonNetwork && selectedPlan) {
       setSelectedPlan(null)
@@ -80,23 +79,24 @@ function BuyCredits() {
     }
   }, [session, router])
 
-  const createPaymentId = useCallback((timestamp: string) => {
-    return `0x${Buffer.from(`${timestamp}-${address}-${Date.now()}`).toString('hex')}` as `0x${string}`;
+  const createPaymentId = useCallback(() => {
+    const timestamp = Date.now().toString();
+    const randomStr = Math.random().toString(36).substring(7);
+    return `0x${Buffer.from(`${timestamp}-${address}-${randomStr}`).toString('hex')}` as `0x${string}`;
   }, [address]);
 
   const verifyPayment = useCallback(async (txHash: string) => {
     if (!selectedPlan || !isAuthenticatedSession(session)) {
-      return
+      return;
     }
 
     if (processedTransactions.current.has(txHash)) {
-      return
+      return;
     }
 
     try {
-      processedTransactions.current.add(txHash)
-      const timestamp = Date.now().toString();
-      const paymentId = createPaymentId(timestamp);
+      processedTransactions.current.add(txHash);
+      const paymentId = createPaymentId();
       
       const result = await paymentService.verifyPayment({
         paymentId,
@@ -106,10 +106,10 @@ function BuyCredits() {
         txHash,
         creditAmount: selectedPlan.credits,
         price: selectedPlan.price
-      })
+      });
 
       if (result.success) {
-        await refreshCredits(session.profile.id, session.profile.handle?.fullHandle || '')
+        await refreshCredits(session.profile.id, session.profile.handle?.fullHandle || '');
 
         window.dataLayer?.push({
           event: 'purchase_credits',
@@ -119,16 +119,16 @@ function BuyCredits() {
           price: selectedPlan?.price
         });
 
-        setSuccess(`Successfully purchased ${selectedPlan.credits} credits!`)
-        setSelectedPlan(null)
+        setSuccess(`Successfully purchased ${selectedPlan.credits} credits!`);
+        setSelectedPlan(null);
       }
     } catch (error: any) {
-      console.error('Verification error:', error)
+      console.error('Verification error:', error);
       if (error?.message !== 'Payment already processed') {
-        setError('Payment verification failed: ' + (error?.message || 'Unknown error'))
+        setError('Payment verification failed: ' + (error?.message || 'Unknown error'));
       }
     }
-  }, [session, selectedPlan, refreshCredits, createPaymentId])
+  }, [session, selectedPlan, refreshCredits, createPaymentId]);
 
   useEffect(() => {
     if (receipt?.transactionHash && isPaymentSuccess) {
@@ -138,36 +138,35 @@ function BuyCredits() {
 
   const handlePurchase = async () => {
     if (!selectedPlan || !address || !isAuthenticatedSession(session)) {
-      setError('Please connect your wallet and select a Lens profile')
-      return
+      setError('Please connect your wallet and select a Lens profile');
+      return;
     }
 
     if (!isPolygonNetwork) {
       try {
-        await switchChain({ chainId: polygon.id })
-        return
+        await switchChain({ chainId: polygon.id });
+        return;
       } catch (error: any) {
-        setError('Failed to switch network. Please switch to Polygon manually.')
-        return
+        setError('Failed to switch network. Please switch to Polygon manually.');
+        return;
       }
     }
 
-    setError(null)
+    setError(null);
     try {
-      const timestamp = Date.now().toString();
-      const paymentId = createPaymentId(timestamp);
+      const paymentId = createPaymentId();
 
       await writeContract({
         address: CONTRACTS.CHILLENS_CREDITS.address,
         abi: ChillensCreditsABI,
         functionName: 'makePayment',
         args: [selectedPlan.tokenAmount, paymentId]
-      })
+      });
     } catch (error: any) {
-      console.error('Purchase error:', error)
-      setError(error instanceof Error ? error.message : 'Purchase failed')
+      console.error('Purchase error:', error);
+      setError(error instanceof Error ? error.message : 'Purchase failed');
     }
-  }
+  };
 
   if (session === undefined) {
     return <LoadingSpinner />
