@@ -87,15 +87,15 @@ function BuyCredits() {
 
   const verifyPayment = useCallback(async (txHash: string) => {
     if (!selectedPlan || !isAuthenticatedSession(session)) {
-      return;
+      return
     }
 
     if (processedTransactions.current.has(txHash)) {
-      return;
+      return
     }
 
     try {
-      processedTransactions.current.add(txHash);
+      processedTransactions.current.add(txHash)
       const paymentId = createPaymentId();
       
       const result = await paymentService.verifyPayment({
@@ -106,10 +106,10 @@ function BuyCredits() {
         txHash,
         creditAmount: selectedPlan.credits,
         price: selectedPlan.price
-      });
+      })
 
       if (result.success) {
-        await refreshCredits(session.profile.id, session.profile.handle?.fullHandle || '');
+        await refreshCredits(session.profile.id, session.profile.handle?.fullHandle || '')
 
         window.dataLayer?.push({
           event: 'purchase_credits',
@@ -119,16 +119,16 @@ function BuyCredits() {
           price: selectedPlan?.price
         });
 
-        setSuccess(`Successfully purchased ${selectedPlan.credits} credits!`);
-        setSelectedPlan(null);
+        setSuccess(`Successfully purchased ${selectedPlan.credits} credits!`)
+        setSelectedPlan(null)
       }
     } catch (error: any) {
-      console.error('Verification error:', error);
+      console.error('Verification error:', error)
       if (error?.message !== 'Payment already processed') {
-        setError('Payment verification failed: ' + (error?.message || 'Unknown error'));
+        setError('Payment verification failed: ' + (error?.message || 'Unknown error'))
       }
     }
-  }, [session, selectedPlan, refreshCredits, createPaymentId]);
+  }, [session, selectedPlan, refreshCredits, createPaymentId])
 
   useEffect(() => {
     if (receipt?.transactionHash && isPaymentSuccess) {
@@ -138,35 +138,40 @@ function BuyCredits() {
 
   const handlePurchase = async () => {
     if (!selectedPlan || !address || !isAuthenticatedSession(session)) {
-      setError('Please connect your wallet and select a Lens profile');
-      return;
+      setError('Please connect your wallet and select a Lens profile')
+      return
     }
 
     if (!isPolygonNetwork) {
       try {
-        await switchChain({ chainId: polygon.id });
-        return;
+        await switchChain({ chainId: polygon.id })
+        return
       } catch (error: any) {
-        setError('Failed to switch network. Please switch to Polygon manually.');
-        return;
+        setError('Failed to switch network. Please switch to Polygon manually.')
+        return
       }
     }
 
-    setError(null);
+    setError(null)
     try {
       const paymentId = createPaymentId();
+      console.log('Making payment with:', {
+        address: CONTRACTS.CHILLENS_CREDITS.address,
+        amount: selectedPlan.tokenAmount.toString(),
+        paymentId
+      });
 
       await writeContract({
         address: CONTRACTS.CHILLENS_CREDITS.address,
         abi: ChillensCreditsABI,
         functionName: 'makePayment',
         args: [selectedPlan.tokenAmount, paymentId]
-      });
+      })
     } catch (error: any) {
-      console.error('Purchase error:', error);
-      setError(error instanceof Error ? error.message : 'Purchase failed');
+      console.error('Purchase error:', error)
+      setError(error instanceof Error ? error.message : 'Purchase failed')
     }
-  };
+  }
 
   if (session === undefined) {
     return <LoadingSpinner />
@@ -244,7 +249,19 @@ function BuyCredits() {
           </div>
 
           <button
-            onClick={isApproved ? handlePurchase : handleApprove}
+            onClick={async () => {
+              try {
+                if (isApproved) {
+                  console.log('Attempting purchase...');
+                  await handlePurchase();
+                } else {
+                  console.log('Attempting approve...');
+                  await handleApprove();
+                }
+              } catch (error) {
+                console.error('Button click error:', error);
+              }
+            }}
             disabled={
               !selectedPlan || 
               isWritePending || 
