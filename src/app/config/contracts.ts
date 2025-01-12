@@ -11,7 +11,7 @@ export const CONTRACTS = {
   }
 } as const
 
-export const ChillensABI = [
+export const ChillensCreditsABI  = [
   {
     inputs: [
       {
