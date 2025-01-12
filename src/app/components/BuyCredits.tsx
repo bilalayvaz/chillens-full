@@ -14,6 +14,7 @@ import { useAppStore } from '../store/useAppStore'
 import { withAuth } from '../components/hoc/withAuth';
 import Image from 'next/image';
 import { polygon } from 'wagmi/chains'
+import { ethers } from 'ethers'
 
 function LoadingSpinner() {
   return (
@@ -79,10 +80,12 @@ function BuyCredits() {
     }
   }, [session, router])
 
-  const createPaymentId = useCallback(() => {
+  const createPaymentId = useCallback((): `0x${string}` => {
     const timestamp = Date.now().toString();
     const randomStr = Math.random().toString(36).substring(7);
-    return `0x${Buffer.from(`${timestamp}-${address}-${randomStr}`).toString('hex')}` as `0x${string}`;
+    const message = `${timestamp}-${address}-${randomStr}`;
+    const bytes32 = ethers.utils.id(message);
+    return bytes32 as `0x${string}`;
   }, [address]);
 
   const verifyPayment = useCallback(async (txHash: string) => {
@@ -161,11 +164,18 @@ function BuyCredits() {
         paymentId
       });
 
+      console.log('Contract config:', {
+        address: CONTRACTS.CHILLENS_CREDITS.address,
+        amount: selectedPlan.tokenAmount,
+        paymentId,
+        abi: ChillensCreditsABI
+      });
+
       await writeContract({
         address: CONTRACTS.CHILLENS_CREDITS.address,
         abi: ChillensCreditsABI,
         functionName: 'makePayment',
-        args: [selectedPlan.tokenAmount, paymentId]
+        args: [selectedPlan.tokenAmount, paymentId] as [bigint, `0x${string}`]
       })
     } catch (error: any) {
       console.error('Purchase error:', error)
