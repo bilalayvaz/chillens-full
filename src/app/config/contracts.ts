@@ -2,7 +2,7 @@ import { Address } from 'viem'
 
 export const CONTRACTS = {
   CHILLENS: {
-    address: '0x60dF43dcE4224d1E1e1371437Ef8fD0Ad1c55C96' as Address, 
+    address: '0x60dF43dcE4224d1E1e1371437Ef8fD0Ad1c55C96' as Address,
     chainId: 137
   },
   BONSAI: {
@@ -61,8 +61,250 @@ export const ChillensABI = [
   },
   {
     inputs: [],
+    name: "InvalidToken",
+    type: "error"
+  },
+  {
+    inputs: [],
+    name: "NotAuthorized",
+    type: "error"
+  },
+  {
+    inputs: [],
     name: "PaymentIDUsed",
     type: "error"
+  },
+  {
+    inputs: [],
+    name: "TransferFailed",
+    type: "error"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "user",
+        type: "address"
+      },
+      {
+        indexed: false,
+        internalType: "bool",
+        name: "status",
+        type: "bool"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "timestamp",
+        type: "uint256"
+      }
+    ],
+    name: "BlacklistUpdated",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "by",
+        type: "address"
+      }
+    ],
+    name: "ContractPaused",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "by",
+        type: "address"
+      }
+    ],
+    name: "ContractUnpaused",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address",
+        name: "token",
+        type: "address"
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "to",
+        type: "address"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256"
+      }
+    ],
+    name: "EmergencyWithdrawal",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "maxWithdrawAmount",
+        type: "uint256"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "maxPaymentAmount",
+        type: "uint256"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "minPaymentAmount",
+        type: "uint256"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "timestamp",
+        type: "uint256"
+      }
+    ],
+    name: "LimitsUpdated",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "newMultiplier",
+        type: "uint256"
+      }
+    ],
+    name: "MaxGasPriceMultiplierUpdated",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "previousOwner",
+        type: "address"
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "newOwner",
+        type: "address"
+      }
+    ],
+    name: "OwnershipTransferred",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address",
+        name: "account",
+        type: "address"
+      }
+    ],
+    name: "Paused",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "user",
+        type: "address"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256"
+      },
+      {
+        indexed: false,
+        internalType: "bytes32",
+        name: "paymentId",
+        type: "bytes32"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "timestamp",
+        type: "uint256"
+      }
+    ],
+    name: "PaymentReceived",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "currentGasPrice",
+        type: "uint256"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "allowedMaxGasPrice",
+        type: "uint256"
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "user",
+        type: "address"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "timestamp",
+        type: "uint256"
+      }
+    ],
+    name: "SuspiciousGasPrice",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "address",
+        name: "account",
+        type: "address"
+      }
+    ],
+    name: "Unpaused",
+    type: "event"
   },
   {
     inputs: [
@@ -171,7 +413,40 @@ export const ChillensABI = [
   },
   {
     inputs: [],
+    name: "owner",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [],
     name: "pauseContract",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "paused",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "renounceOwnership",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
@@ -190,6 +465,19 @@ export const ChillensABI = [
       }
     ],
     name: "setBlacklist",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "newOwner",
+        type: "address"
+      }
+    ],
+    name: "transferOwnership",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
