@@ -1,10 +1,15 @@
-// middleware.ts
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value
   const { pathname } = request.nextUrl
+
+  // Bakım modu kontrolü
+  const isMaintenance = process.env.MAINTENANCE_MODE === 'true'
+  if (isMaintenance && pathname !== '/maintenance') {
+    return NextResponse.redirect(new URL('/maintenance', request.url))
+  }
 
   // Public routes - her zaman erişilebilir
   const publicPaths = ['/connect', '/feed', '/faq']
