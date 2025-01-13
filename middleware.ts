@@ -15,7 +15,7 @@ export function middleware(request: NextRequest) {
   const publicPaths = ['/connect', '/feed', '/faq']
   if (publicPaths.includes(pathname)) {
     // Connect sayfasında token varsa feed'e yönlendir
-    if (pathname === '/connect' && token) {
+    if (pathname === '/connect' && token && !isMaintenance) {
       return NextResponse.redirect(new URL('/feed', request.url));
     }
     return NextResponse.next();
@@ -25,7 +25,7 @@ export function middleware(request: NextRequest) {
   const protectedPaths = ['/profile', '/add-credit']
   const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path))
   
-  if (isProtectedPath && !token) {
+  if (isProtectedPath && !token && !isMaintenance) {
     // URL'i sakla ve connect sayfasına yönlendir
     const url = new URL('/connect', request.url)
     url.searchParams.set('redirectTo', pathname)
