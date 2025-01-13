@@ -27,6 +27,7 @@ export function middleware(request: NextRequest) {
   
   if (isProtectedPath && !token && !isMaintenance) {
     // URL'i sakla ve connect sayfasına yönlendir
+    console.log(isMaintenance)
     const url = new URL('/connect', request.url)
     url.searchParams.set('redirectTo', pathname)
     return NextResponse.redirect(url)
