@@ -6,7 +6,7 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Bakım modu kontrolü
-  const isMaintenance = process.env.NEXT_PUBLIC_MAINTENANCE_MODE == 'true'
+  const isMaintenance = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true'
   if (isMaintenance) {
     return NextResponse.redirect(new URL('/maintenance', request.url))
   }
@@ -27,7 +27,6 @@ export function middleware(request: NextRequest) {
   
   if (isProtectedPath && !token && !isMaintenance) {
     // URL'i sakla ve connect sayfasına yönlendir
-    console.log(isMaintenance)
     const url = new URL('/connect', request.url)
     url.searchParams.set('redirectTo', pathname)
     return NextResponse.redirect(url)
@@ -41,11 +40,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/connect',
-    '/feed',
-    '/profile/:path*',
-    '/add-credit/:path*',
-    '/faq',
-    '/*'
+  '/((?!maintenance|api|_next/static|_next/image|favicon.ico).*)',
   ]
 }
