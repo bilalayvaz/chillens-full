@@ -6,9 +6,8 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Bakım modu kontrolü
-  const isMaintenance = process.env.MAINTENANCE_MODE === 'true'
+  const isMaintenance = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true'
   if (isMaintenance) {
-    console.log(isMaintenance)
     return NextResponse.redirect(new URL('/maintenance', request.url))
   }
 
