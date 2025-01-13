@@ -28,8 +28,9 @@ export default function FeedPage() {
   };
  
   return (
-    <main className="min-h-screen">
-      <Navbar />
+    <>
+    <Navbar/>
+    <main className="container">
       <div className="max-w-7xl mx-auto p-8">
         <div className="text-center mb-8">
           <div className="flex flex-col md:flex-row items-center gap-2 md:gap-8">
@@ -71,5 +72,6 @@ export default function FeedPage() {
         />
       </div>
     </main>
+    </>
   );
 }

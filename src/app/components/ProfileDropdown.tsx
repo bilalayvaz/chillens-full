@@ -50,7 +50,6 @@ const ProfileDropdown = ({ session }: ProfileDropdownProps) => {
       await authService.logout();
       reset();
       
-  
       // Ana sayfaya yönlendir
       router.push('/');
       router.refresh();
