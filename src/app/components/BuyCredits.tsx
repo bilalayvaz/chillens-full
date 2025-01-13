@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSession, Session, ProfileSession } from '@lens-protocol/react-web'
-import { useAccount, useChainId, useWaitForTransactionReceipt, useWriteContract, useSwitchChain, useBalance } from 'wagmi'
+import { useAccount, useChainId, useWaitForTransactionReceipt, useWriteContract, useSwitchChain, useBalance, usePublicClient} from 'wagmi'
+import { createPublicClient, http } from 'viem'
 import { useTokenApproval } from '../hooks/useTokenApproval'
 import { useCreditPlans, type CreditPlan } from '../hooks/useCreditPlans'
 import { CONTRACTS, ChillensCreditsABI } from '../config/contracts'
@@ -37,6 +38,7 @@ function BuyCredits() {
   const [success, setSuccess] = useState<string | null>(null)
   const processedTransactions = useRef(new Set<string>())
   const refreshCredits = useAppStore(state => state.refreshCredits)
+  const publicClient = usePublicClient()
 
   const { plans, isLoading: isLoadingPlans } = useCreditPlans()
   const { data: session } = useSession()
@@ -90,15 +92,32 @@ function BuyCredits() {
 
   const verifyPayment = useCallback(async (txHash: string) => {
     if (!selectedPlan || !isAuthenticatedSession(session)) {
-      return
+      return;
     }
 
     if (processedTransactions.current.has(txHash)) {
-      return
+      return;
     }
 
     try {
-      processedTransactions.current.add(txHash)
+      // Eğer publicClient undefined ise yeni bir client oluştur
+      const client = publicClient ?? createPublicClient({
+        chain: polygon,
+        transport: http()
+      });
+
+      // Transaction receipt'i kontrol et
+      const receipt = await client.getTransactionReceipt({
+        hash: txHash as `0x${string}`,
+      });
+
+      // Transaction başarısız olduysa işlemi reddet
+      if (!receipt || !receipt.status) {
+        setError('Transaction failed on blockchain');
+        return;
+      }
+
+      processedTransactions.current.add(txHash);
       const paymentId = createPaymentId();
       
       const result = await paymentService.verifyPayment({
@@ -109,10 +128,10 @@ function BuyCredits() {
         txHash,
         creditAmount: selectedPlan.credits,
         price: selectedPlan.price
-      })
+      });
 
       if (result.success) {
-        await refreshCredits(session.profile.id, session.profile.handle?.fullHandle || '')
+        await refreshCredits(session.profile.id, session.profile.handle?.fullHandle || '');
 
         window.dataLayer?.push({
           event: 'purchase_credits',
@@ -122,73 +141,61 @@ function BuyCredits() {
           price: selectedPlan?.price
         });
 
-        setSuccess(`Successfully purchased ${selectedPlan.credits} credits!`)
-        setSelectedPlan(null)
+        setSuccess(`Successfully purchased ${selectedPlan.credits} credits!`);
+        setSelectedPlan(null);
       }
     } catch (error: any) {
-      console.error('Verification error:', error)
+      console.error('Verification error:', error);
       if (error?.message !== 'Payment already processed') {
-        setError('Payment verification failed: ' + (error?.message || 'Unknown error'))
+        setError('Payment verification failed: ' + (error?.message || 'Unknown error'));
       }
     }
-  }, [session, selectedPlan, refreshCredits, createPaymentId])
+}, [session, selectedPlan, refreshCredits, createPaymentId, publicClient]);
 
   useEffect(() => {
-    if (receipt?.transactionHash && isPaymentSuccess) {
-      verifyPayment(receipt.transactionHash)
+    if (receipt?.transactionHash && isPaymentSuccess && receipt.status) {
+      verifyPayment(receipt.transactionHash);
     }
-  }, [receipt, isPaymentSuccess, verifyPayment])
+  }, [receipt, isPaymentSuccess, verifyPayment]);
 
   const handlePurchase = async () => {
     if (!selectedPlan || !address || !isAuthenticatedSession(session)) {
-      setError('Please connect your wallet and select a Lens profile')
-      return
+      setError('Please connect your wallet and select a Lens profile');
+      return;
     }
 
     if (!isPolygonNetwork) {
       try {
-        await switchChain({ chainId: polygon.id })
-        return
+        await switchChain({ chainId: polygon.id });
+        return;
       } catch (error: any) {
-        setError('Failed to switch network. Please switch to Polygon manually.')
-        return
+        setError('Failed to switch network. Please switch to Polygon manually.');
+        return;
       }
     }
 
-    setError(null)
+    setError(null);
     try {
       const paymentId = createPaymentId();
-      console.log('Making payment with:', {
-        address: CONTRACTS.CHILLENS_CREDITS.address,
-        amount: selectedPlan.tokenAmount.toString(),
-        paymentId
-      });
-
-      console.log('Contract config:', {
-        address: CONTRACTS.CHILLENS_CREDITS.address,
-        amount: selectedPlan.tokenAmount,
-        paymentId,
-        abi: ChillensCreditsABI
-      });
 
       await writeContract({
         address: CONTRACTS.CHILLENS_CREDITS.address,
         abi: ChillensCreditsABI,
         functionName: 'makePayment',
         args: [selectedPlan.tokenAmount, paymentId] as [bigint, `0x${string}`]
-      })
+      });
     } catch (error: any) {
-      console.error('Purchase error:', error)
-      setError(error instanceof Error ? error.message : 'Purchase failed')
+      console.error('Purchase error:', error);
+      setError(error instanceof Error ? error.message : 'Purchase failed');
     }
-  }
+  };
 
   if (session === undefined) {
-    return <LoadingSpinner />
+    return <LoadingSpinner />;
   }
 
   if (isLoadingPlans) {
-    return <LoadingSpinner />
+    return <LoadingSpinner />;
   }
 
   return (
@@ -262,10 +269,8 @@ function BuyCredits() {
             onClick={async () => {
               try {
                 if (isApproved) {
-                  console.log('Attempting purchase...');
                   await handlePurchase();
                 } else {
-                  console.log('Attempting approve...');
                   await handleApprove();
                 }
               } catch (error) {
