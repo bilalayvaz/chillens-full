@@ -44,6 +44,11 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-  '/((?!maintenance|api|_next/static|_next/image|favicon.ico).*)',
+    '/',
+    '/connect',
+    '/feed',
+    '/profile/:path*',
+    '/add-credit/:path*',
+    '/faq'
   ]
 }
