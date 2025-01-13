@@ -44,6 +44,7 @@ export const config = {
     '/feed',
     '/profile/:path*',
     '/add-credit/:path*',
-    '/faq'
+    '/faq',
+    '/*'
   ]
 }
