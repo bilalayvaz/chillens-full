@@ -16,6 +16,7 @@ import { withAuth } from '../components/hoc/withAuth';
 import Image from 'next/image';
 import { polygon } from 'wagmi/chains'
 import { ethers } from 'ethers'
+import { CheckCircle2, AlertCircle } from 'lucide-react'
 
 function LoadingSpinner() {
   return (
@@ -202,19 +203,26 @@ function BuyCredits() {
     <div className="p-8 max-w-6xl mx-auto space-y-6">
       <h2 className="text-2xl font-bold">Buy Credits</h2>
       
-      {error && (
-        <Alert variant="destructive">
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          {error && (
+      <Alert variant="destructive" className="bg-red-50 border-red-200">
+        <AlertCircle className="h-4 w-4 text-red-500" />
+        <AlertTitle className="text-red-800 font-medium">Error</AlertTitle>
+        <AlertDescription className="text-red-700">
+          {error}
+        </AlertDescription>
+      </Alert>
+    )}
+
+      {success && (
+        <Alert variant="default" className="bg-green-50 border-green-200">
+          <CheckCircle2 className="h-4 w-4 text-green-500" />
+          <AlertTitle className="text-green-800 font-medium">Success</AlertTitle>
+          <AlertDescription className="text-green-700">
+            {success}
+          </AlertDescription>
         </Alert>
       )}
 
-      {success && (
-        <Alert variant="success">
-          <AlertTitle>Success</AlertTitle>
-          <AlertDescription>{success}</AlertDescription>
-        </Alert>
-      )}
 
       {!isPolygonNetwork ? (
         <Alert>
