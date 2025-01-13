@@ -15,7 +15,7 @@ export default function HomePage() {
           <div className="flex flex-col md:flex-row justify-center items-center gap-0 md:gap-8">
           <div className="mx-4 mt-4 mb-8">
               <Image 
-                src="/chillensAvatar.svg" 
+                src="/chillensAvatarV2.svg" 
                 alt="Chillens Avatar"
                 width={300}
                 height={300}

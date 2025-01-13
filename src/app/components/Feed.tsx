@@ -28,8 +28,8 @@ const PostCard = ({ post }: PostCardProps) => {
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
           <Image 
-            src="/chillensAvatarV2.svg" 
-            alt="Chillens Avatar V2"
+            src="/chillensAvatar.svg" 
+            alt="Chillens Avatar"
             width={40}
             height={40}
             className="w-full h-full object-cover"
