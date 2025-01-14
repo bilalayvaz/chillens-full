@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
+
   const token = request.cookies.get('token')?.value
   const { pathname } = request.nextUrl
 
@@ -14,24 +15,24 @@ export function middleware(request: NextRequest) {
   // Public routes - her zaman erişilebilir
   const publicPaths = ['/connect', '/feed', '/faq']
   
-  // Ana sayfa veya public path kontrolü
-  if (pathname === '/' || publicPaths.includes(pathname)) {
-    // Ana sayfada token varsa feed'e yönlendir
-    if (pathname === '/' && token && !isMaintenance) {
-      return NextResponse.redirect(new URL('/feed', request.url));
+  // Eğer token varsa ve /connect veya / sayfalarındaysa yönlendir
+  if (token) {
+    if (pathname === '/connect' || pathname === '/') {
+      console.log(`Redirecting from ${pathname} to /feed because token exists`)
+      const response = NextResponse.redirect(new URL('/feed', request.url))
+      return response
     }
-    
-    // Connect sayfasında token varsa feed'e yönlendir
-    if (pathname === '/connect' && token && !isMaintenance) {
-      return NextResponse.redirect(new URL('/feed', request.url));
-    }
-    
-    return NextResponse.next();
+  }
+
+  // Public path'lere her zaman izin ver
+  if (publicPaths.includes(pathname)) {
+    return NextResponse.next()
   }
 
   return NextResponse.next()
 }
 
+// Önemli: Config'i düzgün ayarla
 export const config = {
   matcher: [
     '/',
@@ -40,6 +41,6 @@ export const config = {
     '/profile/:path*',
     '/add-credit/:path*',
     '/faq',
-    '/((?!maintenance|api|_next/static|_next/image|favicon.ico).*)'
+    '/((?!api|_next/static|_next/image|maintenance|favicon.ico).*)'
   ]
 }
