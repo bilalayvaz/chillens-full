@@ -12,7 +12,7 @@ export default function LandingPage() {
 
   const handleButtonClick = () => {
     if (session?.type === 'WITH_PROFILE') {
-      router.push('/profile');
+      router.push('/feed');
     } else {
       router.push('/connect');
     }
