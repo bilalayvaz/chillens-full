@@ -27,8 +27,9 @@ export default function FeedPage() {
     setIsUpdated(prev => !prev); // Feed'i yenile
   };
  
-  return (
-    <>
+  // page.tsx'i düzenleyelim
+return (
+  <>
     <Navbar/>
     <main className="container">
       <div className="max-w-7xl mx-auto p-8">
@@ -57,21 +58,15 @@ export default function FeedPage() {
           Recent <span className="text-red-500">Funny</span> Contents:
         </h2>
 
-        <div className="flex justify-center">
-          <div className="overflow-x-auto custom-scrollbar">
-            <div className="flex gap-4 pb-4">
-              <Feed isUpdated={isUpdated} />
-            </div>
-          </div>
-        </div>
+        {/* Feed component'ini direkt çağırıyoruz */}
+        <Feed isUpdated={isUpdated} />
 
-        {/* Yeni PostModal */}
         <PostModal 
           isOpen={postIsCreating} 
           onClose={handleModalClose}
         />
       </div>
     </main>
-    </>
-  );
+  </>
+);
 }

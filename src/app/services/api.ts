@@ -83,12 +83,21 @@ export const postService = {
     return response.json();
   },
 
-  getLatest: async () => {
-    const response = await fetchWithRetry(
-      `${API_URL}/api/posts`,
-      { method: 'GET' }
-    );
-    return response.json();
+  getLatest: async (page: number = 1) => {
+    try {
+      const response = await fetchWithRetry(
+        `${API_URL}/api/posts?page=${page}`,  // page parametresini URL'e ekledik
+        { method: 'GET' }
+      );
+      const data = await response.json();
+      return {
+        posts: data.posts || [],
+        hasMore: data.hasMore
+      };
+    } catch (error) {
+      console.error('Error in getLatest:', error);
+      return { posts: [], hasMore: false };
+    }
   }
 };
 
