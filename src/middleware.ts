@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-
   const token = request.cookies.get('token')?.value
   const { pathname } = request.nextUrl
 
@@ -12,19 +11,14 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/maintenance', request.url))
   }
 
-  // Public routes - her zaman erişilebilir
-  const publicPaths = ['/connect', '/feed', '/faq']
-  
-  // Eğer token varsa ve /connect veya / sayfalarındaysa yönlendir
-  if (token) {
-    if (pathname === '/connect' || pathname === '/') {
-      console.log(`Redirecting from ${pathname} to /feed because token exists`)
-      const response = NextResponse.redirect(new URL('/feed', request.url))
-      return response
-    }
+  // Eğer token varsa ve kullanıcı / veya /connect'e gitmeye çalışıyorsa
+  // sadece yönlendirme yap, cookie'lere dokunma
+  if (token && (pathname === '/connect' || pathname === '/')) {
+    return NextResponse.redirect(new URL('/feed', request.url))
   }
 
-  // Public path'lere her zaman izin ver
+  // Public routes - her zaman erişilebilir
+  const publicPaths = ['/connect', '/feed', '/faq']
   if (publicPaths.includes(pathname)) {
     return NextResponse.next()
   }
@@ -32,7 +26,6 @@ export function middleware(request: NextRequest) {
   return NextResponse.next()
 }
 
-// Önemli: Config'i düzgün ayarla
 export const config = {
   matcher: [
     '/',
