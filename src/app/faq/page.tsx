@@ -21,7 +21,7 @@ export default function FAQPage() {
             <h2 className="text-3xl mb-6">FAQ</h2>
             <p className="text-md mb-4">
               <strong>1. Who we are?</strong><br />
-              We are <span className="text-[#ff3131]">degens</span> who realized that many contents on Lens are boring and want to fix it. Here our Lens handles: <a href="https://hey.xyz/u/dollowen" target="_blank" rel="noopener noreferrer"><span className="text-[#ff3131]">dollowen</span></a> | <a href="https://hey.xyz/u/mcelil" target="_blank" rel="noopener noreferrer"><span className="text-[#ff3131]">mcelil</span></a> | <a href="https://hey.xyz/u/bilalayvazoglu" target="_blank" rel="noopener noreferrer"><span className="text-[#ff3131]">bilalayvazoglu</span></a> | <a href="https://hey.xyz/u/oflu61" target="_blank" rel="noopener noreferrer"><span className="text-[#ff3131]">oflu61</span></a>
+              We are <span className="text-[#ff3131]">degens</span> who realized that many contents on Lens are boring and want to fix it. Here our Lens handles: <a href="https://hey.xyz/u/bilalayvazoglu" target="_blank" rel="noopener noreferrer"><span className="text-[#ff3131]">bilalayvazoglu</span></a> | <a href="https://hey.xyz/u/dollowen" target="_blank" rel="noopener noreferrer"><span className="text-[#ff3131]">dollowen</span></a> | <a href="https://hey.xyz/u/mcelil" target="_blank" rel="noopener noreferrer"><span className="text-[#ff3131]">mcelil</span></a> | <a href="https://hey.xyz/u/oflu61" target="_blank" rel="noopener noreferrer"><span className="text-[#ff3131]">oflu61</span></a>
             </p>
             <p className="text-md mb-4">
               <strong>2. What’s CHILLENS?</strong><br />
