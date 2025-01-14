@@ -13,11 +13,19 @@ export function middleware(request: NextRequest) {
 
   // Public routes - her zaman erişilebilir
   const publicPaths = ['/connect', '/feed', '/faq']
-  if (publicPaths.includes(pathname)) {
+  
+  // Ana sayfa veya public path kontrolü
+  if (pathname === '/' || publicPaths.includes(pathname)) {
+    // Ana sayfada token varsa feed'e yönlendir
+    if (pathname === '/' && token && !isMaintenance) {
+      return NextResponse.redirect(new URL('/feed', request.url));
+    }
+    
     // Connect sayfasında token varsa feed'e yönlendir
     if (pathname === '/connect' && token && !isMaintenance) {
       return NextResponse.redirect(new URL('/feed', request.url));
     }
+    
     return NextResponse.next();
   }
 
